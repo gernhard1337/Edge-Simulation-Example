@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-US" xml:lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <meta charset="UTF-8" />
+ <title>Forklift-Transport-1 Simulation Model Description</title>
+ <meta content="width=device-width, initial-scale = 1.0" name="viewport" />
+ <meta content="en" http-equiv="Content-Language" />
+ <meta content="A simulation about a forklift transport operation where incoming products are hauled from an arrival area to a storage area."
+       name="description" />
+ <link href="../description.css" rel="stylesheet" />
+</head>
+<body>
+ <div id="frontMatter">
+  <h1><span>Forklift-Transport-1 Model Description</span> <a href="index.html">Back to simulation</a></h1>
+  <p id="copyright">© 2022 (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY</a>) Gerd Wagner,
+   Brandenburg University of Technology, Germany.</p>
+  <figure class="right"><img alt="" src="img/CPM.svg" width="500" /></figure>
+ </div>
+ <section id="shortDescription">
+   <p>This modeling problem has been posted by Noorjax Consulting as their
+     <a href="https://noorjax.com/2022/04/22/anylogic-contest-2/">AnyLogic Contest #2</a>.</p>
+  <p>A common process in any warehouse is the transport of objects with the help of forklifts driven by operators.
+   In this type of process, operators are trained to handle certain types of forklifts, which, in turn, are designed
+   to transport certain types of items.</p>
+   <p>There are 4 locations/areas of interest: the product arrival area, the operators' home location, the forklifts' home location 
+    and the destination area.</p>
+   <p>The process consists of the following steps:</p>
+   <ol>
+    <li>During the day, different types of products arrive at the product arrival area.</li>
+    <li>When a product arrives, if a forklift that can transport this product and an operator that can handle it are available, 
+	  the operator receives the transport order and walks to the forklift home location, drives the forklift to the product arrival area, 
+	  loads the product, transports it to the destination area and unloads it.</li>
+    <li>Otherwise, the newly arrived product is stored in the arrival area, waiting to be transported.</li>
+    <li>After products have been unloaded at the destination area, if there are still products waiting to be transported with 
+	  the same type of forklift, operators drive their forklift back to the arrival area and take care of the next transport order.
+	  Otherwise, they drive the forklift to its home location, where they check if there is still a product waiting that can be
+	  transported with one of the available forklifts:
+      <ol>
+       <li>If there is one, they grab one of the suitable forklifts and take care of the transport order.</li>
+       <li>If there is none, they walk back to the home location.</li>
+      </ol></li>
+   </ol>
+ </section>
+  <p>You can inspect the model's <a href="https://github.com/gwagner57/oes/tree/master/JavaScript/Core2/Forklift-Transport-1">OESjs
+  code</a> on the OES GitHub repo.</p>
+ <details><summary>Conceptual Model</summary>
+  <p>A company's forklift transport operation has resource pools for forklifts (FLs) and their operators.
+   The seven activities <em>Walk to FL</em>, <em>Drive FL to arrival area</em>, <em>Load product</em>, <em>Transport product</em>,
+   <em>Unload product</em>, <em>Drive FL back to arrival area</em> and <em>Drive FL home</em> require both a
+   <em>forklift</em> and an <em>operator</em>) as a resource, while <em>Walk back home</em> activities require only an
+   <em>operator</em>.</p>
+   <details><summary>Conceptual Information Model</summary>
+    <p>The potentially relevant object types are:</p>
+    <ol>
+     <li>products,</li>
+     <li>arrival area,</li>
+     <li>destination area,</li>
+      <li>forklifts,</li>
+      <li>operators.</li>
+    </ol>
+    <p>Potentially relevant types of events and activities (and the types of objects that participate in them) are:</p>
+    <ol>
+      <li>product arrivals (involving products),</li>
+      <li>walk to FL (involving operators and forklifts),</li>
+      <li>drive FL (from home location) to arrival area (involving operators and forklifts),</li>
+      <li>load product,</li>
+      <li>transport product (involving operators, forklifts and products),</li>
+      <li>unload product (involving operators, forklifts and products),</li>
+      <li>drive FL back to arrival area (involving operators and forklifts),</li>
+      <li>drive FL home (involving operators and forklifts),</li>
+      <li>walk back home (involving operators).</li>
+    </ol>
+    <p>Both object types and event types, together with their participation associations, can be visually described in a conceptual
+     information model in the form of a UML class diagram.</p>
+    <!--
+    <figure><figcaption>A conceptual information model describing object, event and activity types.</figcaption>
+      <img alt="???" src="img/CIM.svg" width="500" />
+    </figure>
+    <p>Notice that the association end annotations «rr» and «rp» denote <em>resource roles</em> and <em>resource
+     pools</em>.</p>
+    -->
+   </details>
+   <details><summary>Conceptual Process Model</summary>
+    <p>The types of events and activities listed above can be related with each other via <em>event scheduling</em> arrows,
+     as shown in the following DPMN process diagram:</p>
+    <figure><img alt="A DPMN diagram showing a conceptual process model" src="img/CPM.svg" width="600" />
+    </figure>
+    <p>Notice that no activity node in this model needs a task queue, since their required resources are already
+     allocated by their predecessor node. Consequently, no <em>resource-dependent activity scheduling</em>
+     arrows are used in the diagram.</p>
+   </details>
+  </details>
+  <details><summary>Simulation Design</summary>
+   <details><summary>Information Design Model</summary>
+    <p>In the information design model, we need to define a <i>status</i> attribute for all resource object types, such as
+     <i>Forklift</i> and <i>Operator</i>, and a duration function for each activity type:</p>
+    <figure><figcaption>An information design model defining object, event and activity types.</figcaption>
+     <img alt="T.B.D." src="img/IDM.svg" width="600" />
+    </figure>
+    <p>Notice how functions representing random variables, like the <code>duration</code> function of all activity types,
+     are marked with the keyword (or UML 'stereotype') «rv» standing for "random variable". These random variable functions
+     sample from a probability distribution function (PDF), which is symbolically indicated with expressions like
+     Tri(30,50,40) standing for the triangular PDF with lower and upper bounds 30 and 50, and a median of 40.</p>
+   </details>
+   <details><summary>Process Design Model</summary>
+    <p>In the process design model, we need to specify the state changes and follow-up events caused by events,
+     including activity start and end events, and the constructor arguments for scheduling follow-up events,
+     using model variables (possibly referencing resource pools), as shown in the following DPMN diagram:</p>
+    <figure><figcaption>A computationally complete process design for the Load-Haul-Dump business process.</figcaption>
+      <img alt="T.B.D." src="img/PDM.svg" width="700" />
+    </figure>
+   </details>
+  </details>
+ <details><summary>Implementation with OESjs</summary>
+  <p>The JavaScript-based simulator OESjs Core 2 implements the <em>Activity Networks</em> modeling language of the
+   <em>Object Event Simulation</em> paradigm, and, consequently, allows a straight-forward coding of OE class models
+   and DPMN process models.</p>
+  <details><summary>Implementing the Information Design Model</summary>
+   <p>For implementing the information design model, we have to code all object types, event types and activity types
+    specified in the model in the form of classes.</p>
+   <figure class="right"><img alt="T.B.D." src="img/Operator_IDM.svg" width="300" /></figure>
+  </details>
+  <details open="open"><summary>Implementing the Process Design Model</summary>
+   <p>A DPMN process design model can be decomposed into a set of event rule design
+    models, one for each type of event specified in the design model.</p>
+  </details>
+ </details>
+ <p><a href="index.html">Back to simulation</a></p>
+</body>
+</html>
